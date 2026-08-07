@@ -2,3 +2,11 @@
 ._*
 node_modules/
 lambda/function.zip
+
+# Terraform — .terraform.lock.hcl is deliberately NOT ignored here, it should be committed
+# (pins provider versions for reproducible applies).
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/terraform.tfvars
+terraform/.build/

@@ -1,0 +1,8 @@
+# Copy this to terraform.tfvars (gitignored — keeps your real email address out of the repo)
+# and fill in real values.
+
+support_to_email   = "you@example.com"
+support_from_email = "noreply@example.com"
+
+# Only needed once you're off the github.io URL:
+# allowed_origin = "https://support.latefeetracker.app"

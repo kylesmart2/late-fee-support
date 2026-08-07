@@ -15,6 +15,7 @@ assets/js/support-form.js    Contact form submit handling
 assets/screenshots/          Real app screenshots
 assets/icons/                App icon
 lambda/                      Contact form backend (Node.js, deploy separately — see lambda/README.md)
+terraform/                   Terraform to deploy the Lambda into AWS (us-east-2) — see terraform/README.md
 ```
 
 ## Local preview
@@ -111,6 +112,12 @@ On each request it:
    turns that into the "Sent"/"Something went wrong" message under the form.
 
 ### Deploying it
+
+**Fastest path: `terraform/`** — `cd terraform && terraform apply` deploys the function, its
+IAM role, a public Function URL, and the SES sender identity into us-east-2 in one pass (still
+requires clicking the SES verification email yourself — see `terraform/README.md`). The steps
+below are the manual/by-hand equivalent, useful for understanding what Terraform is doing or
+if you'd rather not use it.
 
 1. **Zip and upload**:
    ```
