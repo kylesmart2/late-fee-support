@@ -1,0 +1,10 @@
+{
+  "name": "late-fee-support-form",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lambda handler for the Late Fee support site's contact form.",
+  "main": "handler.js",
+  "dependencies": {
+    "@aws-sdk/client-ses": "^3.600.0"
+  }
+}

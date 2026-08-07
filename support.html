@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Support — Late Fee</title>
+  <meta name="description" content="Get help with Late Fee, or send a support request straight to the team." />
+  <link rel="icon" href="assets/icons/app-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="brand">
+        <img src="assets/icons/app-icon.png" alt="Late Fee app icon" />
+        <span class="brand-word">Late Fee</span>
+      </a>
+      <nav>
+        <ul class="nav">
+          <li><a href="index.html#features">Features</a></li>
+          <li><a href="index.html#screens">Screens</a></li>
+          <li><a href="support.html" class="nav-support">Support</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="support-hero">
+      <div class="container">
+        <span class="eyebrow">We're open late</span>
+        <h1>How can we help?</h1>
+        <p>Bug, question, or a show that just won't leave your Up Next list — send it over
+           and we'll get back to you.</p>
+      </div>
+    </section>
+
+    <section class="support-body">
+      <div class="container support-layout">
+        <div class="help-list">
+          <div class="help-item">
+            <h3>Before you write in</h3>
+            <p>Most playback and streaming-availability issues come from the streaming
+               service itself, not Late Fee — the app links out to Where to Watch, it
+               doesn't play video directly.</p>
+          </div>
+          <div class="help-item">
+            <h3>Bug reports</h3>
+            <p>Tell us your iOS version, roughly what you were doing, and what you expected
+               to happen instead. A screenshot helps more than a paragraph.</p>
+          </div>
+          <div class="help-item">
+            <h3>Feature requests</h3>
+            <p>We read every one of these. Tell us the problem you're trying to solve, not
+               just the feature — sometimes there's already a faster way to get there.</p>
+          </div>
+          <div class="help-item">
+            <h3>Response time</h3>
+            <p>We're a small team. Expect a reply within a few business days.</p>
+          </div>
+        </div>
+
+        <form class="ticket-form" id="support-form" novalidate>
+          <p class="ticket-kicker">Support Ticket</p>
+          <p class="ticket-sub">Admit one message. No expiration date.</p>
+
+          <div class="form-row">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" autocomplete="name" required />
+          </div>
+
+          <div class="form-row">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" autocomplete="email" required />
+          </div>
+
+          <div class="form-row">
+            <label for="topic">Topic</label>
+            <select id="topic" name="topic" required>
+              <option value="" disabled selected>Choose one…</option>
+              <option value="bug">Bug report</option>
+              <option value="feature">Feature request</option>
+              <option value="account">Account &amp; data</option>
+              <option value="other">Something else</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" required></textarea>
+          </div>
+
+          <!-- Honeypot — hidden from real visitors via CSS, catches simple bots that fill
+               every field. Not a substitute for real server-side validation in the Lambda. -->
+          <div class="form-row" style="position: absolute; left: -9999px;" aria-hidden="true">
+            <label for="company">Company</label>
+            <input type="text" id="company" name="company" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-navy" id="submit-btn">Send Ticket</button>
+            <span class="form-status" id="form-status" role="status" aria-live="polite"></span>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <img src="assets/icons/app-icon.png" alt="Late Fee app icon" />
+          <span class="footer-brand-word">Late Fee</span>
+        </div>
+        <div class="footer-links">
+          <div class="footer-col">
+            <h4>Site</h4>
+            <ul>
+              <li><a href="index.html#features">Features</a></li>
+              <li><a href="index.html#screens">Screens</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4>Help</h4>
+            <ul>
+              <li><a href="support.html">Support</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; <span id="year"></span> Late Fee. All rights reserved.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/support-form.js"></script>
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>
