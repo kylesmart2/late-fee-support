@@ -89,7 +89,7 @@ resource "aws_lambda_function" "support_form" {
   function_name    = var.function_name
   role             = aws_iam_role.lambda.arn
   handler          = "handler.handler"
-  runtime          = "nodejs20.x"
+  runtime          = "nodejs22.x"
   timeout          = 10
   memory_size      = 128
 

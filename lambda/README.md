@@ -13,7 +13,7 @@ Gateway's features.
    npm install
    zip -r function.zip .
    ```
-   Upload `function.zip` as a new Lambda function (Node.js 20.x runtime).
+   Upload `function.zip` as a new Lambda function (Node.js 22.x runtime).
 
 2. **Environment variables** (Lambda → Configuration → Environment variables):
    - `SUPPORT_TO_EMAIL` — the inbox that should receive tickets.

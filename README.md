@@ -125,7 +125,7 @@ if you'd rather not use it.
    npm install
    zip -r function.zip .
    ```
-   Create a new Lambda function (Node.js 20.x runtime) and upload `function.zip`.
+   Create a new Lambda function (Node.js 22.x runtime) and upload `function.zip`.
 
 2. **Environment variables** (Lambda → Configuration → Environment variables):
    | Variable | Value |
