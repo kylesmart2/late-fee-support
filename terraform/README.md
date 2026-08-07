@@ -1,9 +1,20 @@
-# Terraform — Late Fee support form Lambda
+# Terraform — Late Fee support infrastructure
 
-Deploys `../lambda/handler.js` into **us-east-2**: the Lambda function, its IAM role (scoped
-to just `ses:SendEmail`/`ses:SendRawEmail` on one identity, plus writing its own CloudWatch
-logs), a public Function URL, and the SES sender identity. `terraform apply` handles `npm
-install` and zipping for you — no manual build step.
+Two things, split across `main.tf` and `dns.tf`:
+
+- **The Lambda contact-form backend** (`main.tf`), in **us-east-2**: the function, its IAM
+  role (scoped to just `ses:SendEmail`/`ses:SendRawEmail` on one identity, plus writing its
+  own CloudWatch logs), a public Function URL, and the SES sender identity. `terraform apply`
+  handles `npm install` and zipping for you — no manual build step.
+- **DNS + the domain setup** (`dns.tf`): `latefeetracker.app` (apex) A/AAAA records pointed
+  at GitHub Pages, and `support.latefeetracker.app` set up as a real HTTPS redirect to
+  `https://latefeetracker.app/support.html`. That redirect needs more than a DNS record —
+  S3 static-website endpoints (the thing that actually runs the redirect logic) are
+  **HTTP-only, no TLS at all** (confirmed live: a direct TLS handshake to the S3 website
+  endpoint just resets), so there's a small CloudFront distribution + ACM certificate in
+  front of it purely to add HTTPS. The ACM certificate is requested in **us-east-1**
+  specifically — a hard CloudFront requirement regardless of where anything else lives —
+  via a second, aliased provider block in `versions.tf`.
 
 ## Prerequisites
 
@@ -54,11 +65,26 @@ updates both the Lambda's CORS-checking env var and the Function URL's own CORS 
 pass. Forgetting this step means the contact form gets blocked by CORS from the new domain
 even though the Lambda itself is otherwise working fine.
 
+## A note on `apply` timing
+
+The Lambda side finishes in well under a minute. The DNS/CloudFront side is slower and has
+two separate waits, both automatic (`terraform apply` blocks until each is done, no manual
+step needed) but worth knowing about if `apply` seems to be hanging:
+
+- **ACM DNS validation** — `aws_acm_certificate_validation` waits for the Route 53 record it
+  just created to actually be visible to AWS's own validators. Usually a few minutes.
+- **CloudFront distribution deployment** — a new/changed distribution takes CloudFront
+  several minutes (sometimes 10-15+) to roll out to all edge locations before Terraform
+  considers the resource settled.
+
 ## Tearing it down
 
 ```
 terraform destroy
 ```
 
-Removes the Lambda, its Function URL, IAM role, log group, and the SES identity. Doesn't
-touch anything outside this Terraform state (the GitHub Pages site itself is unaffected).
+Removes the Lambda, its Function URL, IAM role, log group, the SES identity, the DNS records,
+the CloudFront distribution, its ACM certificate, and the S3 redirect bucket. Doesn't touch
+anything outside this Terraform state (the GitHub Pages site itself, or the Route 53 hosted
+zone — that's a `data` lookup against a zone this config never created, not a resource it
+owns).

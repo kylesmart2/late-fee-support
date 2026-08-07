@@ -80,19 +80,125 @@ resource "aws_s3_bucket_website_configuration" "support_redirect" {
   }
 }
 
-# S3 website endpoints are one of the few non-AWS-service targets Route 53 ALIAS records
-# support directly (no separate CloudFront distribution needed for a plain redirect).
-# S3 website endpoints don't live in us-east-2 specifically — they're regional based on where
-# the bucket was created, which for a bucket with no explicit provider/region argument follows
-# the provider's own default (us-east-2, matching everything else in this config).
+# S3 website endpoints are HTTP-only — no TLS at all, confirmed live (a plain TCP connection
+# on :443 just resets, there's nothing to even negotiate a handshake against). Most browsers
+# try HTTPS first today, so aliasing DNS straight at the S3 website endpoint meant the
+# redirect only ever worked over http://, silently failing for anyone/anything defaulting to
+# https:// — confirmed as the actual cause of Kyle's "redirect isn't working" report. CloudFront
+# in front of the same S3 origin is what actually adds real HTTPS support.
+
+resource "aws_acm_certificate" "support_redirect" {
+  provider          = aws.us_east_1
+  domain_name       = "support.latefeetracker.app"
+  validation_method = "DNS"
+
+  tags = { Name = "support.latefeetracker.app-redirect" }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_route53_record" "support_cert_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.support_redirect.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+
+  zone_id = data.aws_route53_zone.root.zone_id
+  name    = each.value.name
+  type    = each.value.type
+  records = [each.value.record]
+  ttl     = 300
+}
+
+resource "aws_acm_certificate_validation" "support_redirect" {
+  provider                = aws.us_east_1
+  certificate_arn         = aws_acm_certificate.support_redirect.arn
+  validation_record_fqdns = [for record in aws_route53_record.support_cert_validation : record.fqdn]
+}
+
+resource "aws_cloudfront_distribution" "support_redirect" {
+  enabled         = true
+  is_ipv6_enabled = true
+  aliases         = ["support.latefeetracker.app"]
+  comment         = "HTTPS front-end for the support.latefeetracker.app -> /support.html redirect"
+
+  origin {
+    # The S3 *website* endpoint specifically (not the plain bucket REST endpoint) — that's
+    # what actually runs the redirect-all-requests logic from the website configuration
+    # above. CloudFront treats this as a generic custom HTTP origin, not an S3 origin, since
+    # website endpoints don't support the S3-origin integration (OAC/OAI don't apply here).
+    domain_name = aws_s3_bucket_website_configuration.support_redirect.website_endpoint
+    origin_id   = "support-redirect-s3-website"
+
+    custom_origin_config {
+      http_port              = 80
+      https_port              = 443
+      origin_protocol_policy  = "http-only"
+      origin_ssl_protocols    = ["TLSv1.2"]
+    }
+  }
+
+  default_cache_behavior {
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods          = ["GET", "HEAD"]
+    target_origin_id        = "support-redirect-s3-website"
+    viewer_protocol_policy  = "redirect-to-https"
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+
+    # Short TTL — this exists purely to serve a redirect, not cacheable content; if the
+    # redirect target ever changes there's no reason for visitors to be stuck on a stale one
+    # for longer than a few minutes.
+    min_ttl     = 0
+    default_ttl = 300
+    max_ttl     = 300
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    acm_certificate_arn      = aws_acm_certificate_validation.support_redirect.certificate_arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
+  }
+
+  tags = { Name = "support.latefeetracker.app-redirect" }
+}
+
 resource "aws_route53_record" "support_alias" {
   zone_id = data.aws_route53_zone.root.zone_id
   name    = "support.latefeetracker.app"
   type    = "A"
 
   alias {
-    name                   = aws_s3_bucket_website_configuration.support_redirect.website_domain
-    zone_id                = aws_s3_bucket.support_redirect.hosted_zone_id
+    name                   = aws_cloudfront_distribution.support_redirect.domain_name
+    zone_id                = aws_cloudfront_distribution.support_redirect.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "support_alias_v6" {
+  zone_id = data.aws_route53_zone.root.zone_id
+  name    = "support.latefeetracker.app"
+  type    = "AAAA"
+
+  alias {
+    name                   = aws_cloudfront_distribution.support_redirect.domain_name
+    zone_id                = aws_cloudfront_distribution.support_redirect.hosted_zone_id
     evaluate_target_health = false
   }
 }

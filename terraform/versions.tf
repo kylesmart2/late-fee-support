@@ -13,6 +13,14 @@ terraform {
   }
 }
 
+locals {
+  default_tags = {
+    Project    = "late-fee-support"
+    ManagedBy  = "terraform"
+    Repository = "kylesmart2/late-fee-support"
+  }
+}
+
 provider "aws" {
   region = "us-east-2"
 
@@ -22,10 +30,18 @@ provider "aws" {
   # Console via Resource Groups & Tag Editor to pull up everything this config created at
   # once, across services.
   default_tags {
-    tags = {
-      Project    = "late-fee-support"
-      ManagedBy  = "terraform"
-      Repository = "kylesmart2/late-fee-support"
-    }
+    tags = local.default_tags
+  }
+}
+
+# CloudFront only ever accepts ACM certificates from us-east-1, regardless of which region
+# the distribution itself (or anything else in this config) actually lives in — a hard AWS
+# requirement, not a choice made here. Only used for the one certificate resource below.
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+
+  default_tags {
+    tags = local.default_tags
   }
 }
