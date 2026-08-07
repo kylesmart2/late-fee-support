@@ -22,6 +22,18 @@
   --text-on-light: #1c1a14;
   --text-on-light-dim: #5c5847;
 
+  /* Semantic tokens for text sitting on a *theme-following* background (the paper-colored
+     sections — features, support body, the ticket form) — not the always-dark brand navy
+     of the hero/header/footer, which stays cream/gold regardless of theme on purpose.
+     Distinct from --navy/--navy-ink themselves so those stay reusable as pure brand color
+     (card backgrounds, borders) without also carrying "and flip for dark mode" baggage. */
+  --heading: var(--navy-ink);
+  --link: var(--navy);
+  --eyebrow-on-paper-bg: rgba(30, 58, 138, 0.08);
+  --eyebrow-on-paper-border: rgba(30, 58, 138, 0.18);
+  --status-success: #1a7a4c;
+  --status-error: #b3261e;
+
   --font-display: "Anton", "Arial Narrow", sans-serif;
   --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
@@ -397,9 +409,9 @@ section {
 }
 
 .section-head .eyebrow {
-  color: var(--navy);
-  background: rgba(30, 58, 138, 0.08);
-  border-color: rgba(30, 58, 138, 0.18);
+  color: var(--link);
+  background: var(--eyebrow-on-paper-bg);
+  border-color: var(--eyebrow-on-paper-border);
 }
 
 .section-head h2 {
@@ -408,7 +420,7 @@ section {
   font-size: clamp(1.9rem, 3.4vw, 2.6rem);
   letter-spacing: 0.01em;
   margin: 0 0 14px;
-  color: var(--navy-ink);
+  color: var(--heading);
   text-wrap: balance;
 }
 
@@ -460,7 +472,7 @@ section {
 .feature-card h3 {
   font-size: 1.12rem;
   margin: 0 0 8px;
-  color: var(--navy-ink);
+  color: var(--heading);
 }
 
 .feature-card p {
@@ -702,7 +714,7 @@ section {
 .help-item h3 {
   margin: 0 0 6px;
   font-size: 1.02rem;
-  color: var(--navy-ink);
+  color: var(--heading);
 }
 
 .help-item p {
@@ -713,7 +725,7 @@ section {
 }
 
 .help-item a {
-  color: var(--navy);
+  color: var(--link);
   font-weight: 600;
   text-decoration: none;
 }
@@ -754,7 +766,7 @@ section {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   font-size: 1.5rem;
-  color: var(--navy);
+  color: var(--heading);
   margin: 0 0 4px;
 }
 
@@ -774,7 +786,7 @@ section {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--navy-ink);
+  color: var(--heading);
   margin-bottom: 7px;
 }
 
@@ -817,11 +829,11 @@ section {
 }
 
 .form-status[data-state="success"] {
-  color: #1a7a4c;
+  color: var(--status-success);
 }
 
 .form-status[data-state="error"] {
-  color: #b3261e;
+  color: var(--status-error);
 }
 
 .form-status[data-state="sending"] {
@@ -880,6 +892,15 @@ section {
     --paper-line: #2a2d38;
     --text-on-light: #f2f0e8;
     --text-on-light-dim: #a9a693;
+    /* The bug Kyle actually hit: --heading/--link stayed pinned to dark navy (meant for a
+       light paper background) even once --paper itself went near-black above — dark text
+       on a dark background, reading as "disappeared." These two are the fix. */
+    --heading: var(--cream);
+    --link: var(--teal);
+    --eyebrow-on-paper-bg: rgba(45, 212, 191, 0.14);
+    --eyebrow-on-paper-border: rgba(45, 212, 191, 0.35);
+    --status-success: #4ade80;
+    --status-error: #f87171;
   }
   .feature-card,
   .help-item {
@@ -906,6 +927,12 @@ section {
   --paper-line: #2a2d38;
   --text-on-light: #f2f0e8;
   --text-on-light-dim: #a9a693;
+  --heading: var(--cream);
+  --link: var(--teal);
+  --eyebrow-on-paper-bg: rgba(45, 212, 191, 0.14);
+  --eyebrow-on-paper-border: rgba(45, 212, 191, 0.35);
+  --status-success: #4ade80;
+  --status-error: #f87171;
 }
 :root[data-theme="dark"] .feature-card,
 :root[data-theme="dark"] .help-item,
@@ -925,4 +952,10 @@ section {
   --paper-line: #e5ddc8;
   --text-on-light: #1c1a14;
   --text-on-light-dim: #5c5847;
+  --heading: var(--navy-ink);
+  --link: var(--navy);
+  --eyebrow-on-paper-bg: rgba(30, 58, 138, 0.08);
+  --eyebrow-on-paper-border: rgba(30, 58, 138, 0.18);
+  --status-success: #1a7a4c;
+  --status-error: #b3261e;
 }
