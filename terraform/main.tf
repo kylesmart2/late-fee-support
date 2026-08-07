@@ -44,6 +44,8 @@ resource "aws_ses_email_identity" "support_sender" {
 resource "aws_cloudwatch_log_group" "lambda" {
   name              = "/aws/lambda/${var.function_name}"
   retention_in_days = var.log_retention_days
+
+  tags = { Name = "${var.function_name}-logs" }
 }
 
 data "aws_iam_policy_document" "assume_role" {
@@ -59,6 +61,8 @@ data "aws_iam_policy_document" "assume_role" {
 resource "aws_iam_role" "lambda" {
   name               = "${var.function_name}-role"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
+
+  tags = { Name = "${var.function_name}-role" }
 }
 
 data "aws_iam_policy_document" "lambda_permissions" {
@@ -99,6 +103,8 @@ resource "aws_lambda_function" "support_form" {
       ALLOWED_ORIGIN     = var.allowed_origin
     }
   }
+
+  tags = { Name = var.function_name }
 
   depends_on = [aws_cloudwatch_log_group.lambda]
 }

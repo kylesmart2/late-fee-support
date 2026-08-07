@@ -55,10 +55,20 @@ resource "aws_route53_record" "apex_aaaa" {
 # no public bucket policy is needed either.
 resource "aws_s3_bucket" "support_redirect" {
   bucket = "support.latefeetracker.app"
+
+  tags = { Name = "support.latefeetracker.app-redirect" }
 }
 
 resource "aws_s3_bucket_website_configuration" "support_redirect" {
   bucket = aws_s3_bucket.support_redirect.id
+
+  # S3's PutBucketWebsite API requires *some* IndexDocument even when RedirectAllRequestsTo
+  # is unused — this one is dead configuration in practice: the routing_rule below has no
+  # condition, so it matches and overrides every single request before this could ever be
+  # reached. Present purely to satisfy the API's validation.
+  index_document {
+    suffix = "index.html"
+  }
 
   routing_rule {
     redirect {
