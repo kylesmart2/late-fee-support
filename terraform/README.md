@@ -5,7 +5,12 @@ Two things, split across `main.tf` and `dns.tf`:
 - **The Lambda contact-form backend** (`main.tf`), in **us-east-2**: the function, its IAM
   role (scoped to just `ses:SendEmail`/`ses:SendRawEmail` on one identity, plus writing its
   own CloudWatch logs), a public Function URL, and the SES sender identity. `terraform apply`
-  handles `npm install` and zipping for you — no manual build step.
+  handles `npm install` and zipping for you — no manual build step. The Function URL's public
+  access needs *two* separate `aws_lambda_permission` grants — `lambda:InvokeFunctionUrl` and,
+  as of an AWS policy change in October 2025, a second one for plain `lambda:InvokeFunction`
+  scoped via `invoked_via_function_url` — or every call 403s with `AccessDeniedException` even
+  though `AuthType` is `NONE`. See the comment above `aws_lambda_permission.public_invoke_function`
+  in `main.tf`.
 - **DNS + the domain setup** (`dns.tf`): `latefeetracker.app` (apex) A/AAAA records pointed
   at GitHub Pages, and `support.latefeetracker.app` set up as a real HTTPS redirect to
   `https://latefeetracker.app/support.html`. That redirect needs more than a DNS record —

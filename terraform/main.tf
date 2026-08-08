@@ -134,3 +134,16 @@ resource "aws_lambda_permission" "public_invoke" {
   principal              = "*"
   function_url_auth_type = "NONE"
 }
+
+# As of October 2025, AWS requires a *second*, separate grant for public Function URLs:
+# plain lambda:InvokeFunction, scoped to only calls made via the function URL (not other
+# invocation paths) by invoked_via_function_url. Without this, every call gets a 403
+# AccessDeniedException even with AuthType NONE and the InvokeFunctionUrl grant above already
+# in place — see https://docs.aws.amazon.com/lambda/latest/dg/urls-auth.html.
+resource "aws_lambda_permission" "public_invoke_function" {
+  statement_id              = "AllowPublicInvokeFunctionViaURL"
+  action                    = "lambda:InvokeFunction"
+  function_name             = aws_lambda_function.support_form.function_name
+  principal                 = "*"
+  invoked_via_function_url  = true
+}
