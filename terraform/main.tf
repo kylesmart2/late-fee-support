@@ -41,6 +41,15 @@ resource "aws_ses_email_identity" "support_sender" {
   email = var.support_from_email
 }
 
+# While the SES account is in sandbox mode, every recipient must also be a verified identity —
+# and SES's ses:SendEmail IAM authorization apparently checks the recipient's identity ARN too
+# in that state (not just the Source/sender, which is all the docs describe), confirmed live via
+# an AccessDeniedException naming this exact identity ARN once support_to_email pointed at an
+# address that already existed as a verified identity in the account.
+resource "aws_ses_email_identity" "support_recipient" {
+  email = var.support_to_email
+}
+
 resource "aws_cloudwatch_log_group" "lambda" {
   name              = "/aws/lambda/${var.function_name}"
   retention_in_days = var.log_retention_days
@@ -67,9 +76,12 @@ resource "aws_iam_role" "lambda" {
 
 data "aws_iam_policy_document" "lambda_permissions" {
   statement {
-    sid       = "SendSupportTicketEmail"
-    actions   = ["ses:SendEmail", "ses:SendRawEmail"]
-    resources = [aws_ses_email_identity.support_sender.arn]
+    sid     = "SendSupportTicketEmail"
+    actions = ["ses:SendEmail", "ses:SendRawEmail"]
+    resources = [
+      aws_ses_email_identity.support_sender.arn,
+      aws_ses_email_identity.support_recipient.arn,
+    ]
   }
 
   statement {
