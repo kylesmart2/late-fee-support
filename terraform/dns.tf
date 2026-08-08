@@ -202,3 +202,38 @@ resource "aws_route53_record" "support_alias_v6" {
     evaluate_target_health = false
   }
 }
+
+# --- iCloud Mail for latefeetracker.app ---
+# Route 53 can't have two separate record sets sharing the same name+type, so both TXT
+# values (Apple's domain-ownership token and the SPF policy) live in one record, same for
+# both MX values below (priority folded into the value string, per Route 53's MX format).
+
+resource "aws_route53_record" "apex_txt" {
+  zone_id = data.aws_route53_zone.root.zone_id
+  name    = "latefeetracker.app"
+  type    = "TXT"
+  ttl     = 300
+  records = [
+    "apple-domain=ggHnHYDAp1JBPDZY",
+    "v=spf1 include:icloud.com ~all",
+  ]
+}
+
+resource "aws_route53_record" "apex_mx" {
+  zone_id = data.aws_route53_zone.root.zone_id
+  name    = "latefeetracker.app"
+  type    = "MX"
+  ttl     = 300
+  records = [
+    "10 mx01.mail.icloud.com.",
+    "10 mx02.mail.icloud.com.",
+  ]
+}
+
+resource "aws_route53_record" "icloud_dkim" {
+  zone_id = data.aws_route53_zone.root.zone_id
+  name    = "sig1._domainkey.latefeetracker.app"
+  type    = "CNAME"
+  ttl     = 300
+  records = ["sig1.dkim.latefeetracker.app.at.icloudmailadmin.com."]
+}
